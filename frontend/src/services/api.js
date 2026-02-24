@@ -14,6 +14,10 @@ export const getHealth = () => api.get('/health');
 // Flights
 export const getFlights = (limit = 50) => api.get(`/flights?limit=${limit}`);
 export const getFlight = (id) => api.get(`/flights/${id}`);
+export const getAirportFlights = (code) => api.get(`/flights/airport/${code}`);
+export const getAircraftFlights = (icao24) => api.get(`/flights/aircraft/${icao24}`);
+export const getFlightTrack = (icao24) => api.get(`/tracks/all/${icao24}`);
+export const getAircraftMetadata = (icao24) => api.get(`/metadata/aircraft/${icao24}`);
 
 // Predictions
 export const predictDelay = (data) => api.post('/predict', data);
@@ -25,7 +29,7 @@ export const getMitigation = (data) => api.post('/mitigate', data);
 export const getWeather = (code) => api.get(`/weather/${code}`);
 
 // KPIs
-export const getKPIs = () => api.get('/kpis');
+export const getKPIs = () => api.get('/analytics/kpis');
 
 // AI Brief
 export const getAIBrief = () => api.get('/ai-brief');

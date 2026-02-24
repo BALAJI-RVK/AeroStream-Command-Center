@@ -4,8 +4,8 @@ Uses Gemini 2.0 Flash to generate 3-step mitigation strategies.
 """
 
 import json
-from config import settings
-from mock_data import generate_mock_mitigation
+from core.config import settings
+from core.mock_data import generate_mock_mitigation
 
 
 async def generate_mitigation_strategy(flight_data: dict, weather_data: dict, delay_probability: float) -> dict:

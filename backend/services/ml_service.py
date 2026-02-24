@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, roc_auc_score
 import duckdb
+from core.database import get_connection
 
 # Check CUDA availability
 def check_cuda() -> dict:
@@ -185,6 +186,7 @@ def predict_delay(flight_data: dict) -> dict:
         if os.path.exists(model_path):
             _model = xgb.XGBClassifier()
             _model.load_model(model_path)
+            _model.set_params(device='cpu') # optimized for single-row inference velocity
         else:
             return _mock_prediction(flight_data)
     

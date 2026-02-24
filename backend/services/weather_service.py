@@ -7,8 +7,8 @@ import httpx
 import json
 import random
 from datetime import datetime
-from config import settings
-from database import get_cached_flight, cache_flight, get_cached_weather, cache_weather, get_real_flights
+from core.config import settings
+from core.database import get_cached_flight, cache_flight, get_cached_weather, cache_weather, get_real_flights
 
 # Airport coordinates for weather lookups
 AIRPORT_COORDS = {

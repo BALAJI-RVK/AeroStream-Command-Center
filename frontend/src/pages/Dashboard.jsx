@@ -1,38 +1,54 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { getFlights, getKPIs, getAIBrief, getHealth } from '../services/api';
+import { getFlights, getKPIs, getAIBrief, getHealth, getAirportFlights } from '../services/api';
+
+// Isolate the typewriter effect so it doesn't re-render the entire Dashboard 50 times a second
+function TypewriterBrief({ text }) {
+    const [displayedText, setDisplayedText] = useState('');
+
+    useEffect(() => {
+        if (!text) return;
+        let i = 0;
+        setDisplayedText('');
+        const typeInterval = setInterval(() => {
+            if (i <= text.length) {
+                setDisplayedText(text.substring(0, i));
+                i++;
+            } else {
+                clearInterval(typeInterval);
+            }
+        }, 20);
+        return () => clearInterval(typeInterval);
+    }, [text]);
+
+    return (
+        <div style={{ marginTop: '10px', fontSize: '16px', lineHeight: 1.4 }}>
+            <span className="teletype-row">{displayedText.replace(/\*\*(.*?)\*\*/g, '$1')}</span>
+            <span className="blink">_</span>
+        </div>
+    );
+}
 
 export default function Dashboard() {
     const [flights, setFlights] = useState([]);
     const [kpis, setKpis] = useState(null);
     const [aiBrief, setAiBrief] = useState('');
     const [health, setHealth] = useState(null);
+    const [airportFlights, setAirportFlights] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         async function load() {
             try {
-                const [flightsRes, kpisRes, briefRes, healthRes] = await Promise.all([
-                    getFlights(30), getKPIs(), getAIBrief(), getHealth()
+                const [flightsRes, kpisRes, briefRes, healthRes, airportRes] = await Promise.all([
+                    getFlights(30), getKPIs(), getAIBrief(), getHealth(), getAirportFlights('VABB')
                 ]);
                 setFlights(flightsRes.data.flights || []);
                 setKpis(kpisRes.data);
-
-                // Simulate typing effect for the brief
-                const briefText = briefRes.data.brief || 'SYSTEM INITIALIZING... NO ISSUES DETECTED.';
-                let i = 0;
-                setAiBrief('');
-                const typeInterval = setInterval(() => {
-                    if (i < briefText.length) {
-                        setAiBrief(prev => prev + briefText.charAt(i));
-                        i++;
-                    } else {
-                        clearInterval(typeInterval);
-                    }
-                }, 20); // Retro typewriter speed
-
+                setAirportFlights(airportRes.data.flights || []);
+                setAiBrief(briefRes.data.brief || 'SYSTEM INITIALIZING... NO ISSUES DETECTED.');
                 setHealth(healthRes.data);
             } catch (e) {
                 console.error('Dashboard load error:', e);
@@ -139,10 +155,7 @@ export default function Dashboard() {
                     {/* Teletype AI Brief */}
                     <div className="hardware-panel" style={{ flex: 1 }}>
                         <h3 style={{ borderBottom: '2px solid var(--crt-green)', paddingBottom: '5px' }}>AI OPS DIRECTIVE</h3>
-                        <div style={{ marginTop: '10px', fontSize: '16px', lineHeight: 1.4 }}>
-                            <span className="teletype-row">{aiBrief.replace(/\*\*(.*?)\*\*/g, '$1')}</span>
-                            <span className="blink">_</span>
-                        </div>
+                        <TypewriterBrief text={aiBrief} />
                     </div>
 
                     {/* System Health Oscilloscope traces placeholder */}

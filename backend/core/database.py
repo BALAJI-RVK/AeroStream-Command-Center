@@ -7,19 +7,25 @@ import duckdb
 import json
 import os
 from datetime import datetime, timedelta
-from config import settings
+from core.config import settings
 
 # Global connection
 _conn = None
+_metadata_loaded_check = False
 
 def get_connection() -> duckdb.DuckDBPyConnection:
     """Get or create DuckDB connection (singleton)."""
     global _conn
     if _conn is None:
-        db_path = os.path.join(os.path.dirname(__file__), settings.duckdb_path)
+        db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), settings.duckdb_path)
         _conn = duckdb.connect(db_path)
+        
+        # Performance PRAGMAs to optimize Kaggle data aggregation (7 million rows)
+        _conn.execute("PRAGMA threads=4")
+        _conn.execute("PRAGMA memory_limit='4GB'")
+        
         _initialize_schema(_conn)
-    return _conn
+    return _conn.cursor()
 
 
 def _initialize_schema(conn: duckdb.DuckDBPyConnection):
@@ -75,6 +81,15 @@ def _initialize_schema(conn: duckdb.DuckDBPyConnection):
     except:
         pass
     
+    # 5. OpenSky token cache
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS opensky_tokens (
+            client_id VARCHAR PRIMARY KEY,
+            access_token VARCHAR,
+            expires_at DOUBLE
+        )
+    """)
+    
     # 5. Prediction log
     conn.execute("""
         CREATE TABLE IF NOT EXISTS predictions_log (
@@ -84,6 +99,20 @@ def _initialize_schema(conn: duckdb.DuckDBPyConnection):
             weather_risk DOUBLE,
             carrier_risk DOUBLE,
             predicted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # 6. Aircraft Metadata mapping
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS aircraft_metadata (
+            icao24 VARCHAR PRIMARY KEY,
+            registration VARCHAR,
+            manufacturername VARCHAR,
+            model VARCHAR,
+            typecode VARCHAR,
+            operator VARCHAR,
+            operatorcallsign VARCHAR,
+            owner VARCHAR
         )
     """)
     
@@ -202,6 +231,56 @@ def load_kaggle_data(flight_delay_path: str = None, indian_flights_path: str = N
 
 
 # ============== CACHING LAYER ==============
+
+def get_aircraft_metadata(icao24: str):
+    global _metadata_loaded_check
+    conn = get_connection()
+    try:
+        # Check if table is empty (cached in memory)
+        if not _metadata_loaded_check:
+            count = conn.execute("SELECT COUNT(*) FROM aircraft_metadata").fetchone()[0]
+            csv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "aircraftDatabase.csv")
+            
+            if count == 0 and os.path.exists(csv_path):
+                print(f"[DB] Ingesting Aircraft Metadata from {csv_path}...")
+                # Let DuckDB auto-infer and insert relevant columns
+                conn.execute(f"""
+                    INSERT INTO aircraft_metadata 
+                    SELECT 
+                        CAST(icao24 AS VARCHAR), 
+                        CAST(registration AS VARCHAR), 
+                        CAST(manufacturername AS VARCHAR), 
+                        CAST(model AS VARCHAR), 
+                        CAST(typecode AS VARCHAR), 
+                        CAST(operator AS VARCHAR), 
+                        CAST(operatorcallsign AS VARCHAR), 
+                        CAST(owner AS VARCHAR)
+                    FROM read_csv_auto('{csv_path.replace(chr(92), "/")}', ignore_errors=true)
+                    WHERE icao24 IS NOT NULL
+                """)
+                print(f"[DB] Aircraft Metadata loaded. Rows: {conn.execute('SELECT COUNT(*) FROM aircraft_metadata').fetchone()[0]}")
+            
+            # Ensure the index exists regardless of whether we just loaded the data
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_aircraft_metadata ON aircraft_metadata(icao24)")
+            _metadata_loaded_check = True
+            
+        # Query
+        res = conn.execute("SELECT registration, manufacturername, model, typecode, operator, owner FROM aircraft_metadata WHERE icao24 = ?", [icao24]).fetchone()
+        if res:
+            return {
+                "icao24": icao24,
+                "registration": res[0],
+                "manufacturer": res[1],
+                "model": res[2],
+                "typecode": res[3],
+                "operator": res[4],
+                "owner": res[5]
+            }
+        
+    except Exception as e:
+        print(f"⚠️ Error querying aircraft_metadata: {e}")
+        
+    return {"icao24": icao24, "registration": "UNK", "manufacturer": "UNK", "model": "UNK", "operator": "UNK", "owner": "UNK", "typecode": "UNK"}
 
 def get_cached_flight(flight_id: str) -> dict | None:
     """
