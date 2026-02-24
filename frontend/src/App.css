@@ -1,0 +1,284 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+:root {
+  /* CRT Phosphor Palette */
+  --crt-green: #00ff41;
+  --crt-amber: #ffaa00;
+  --crt-red: #ff0000;
+  --crt-bg: #001100;
+  --crt-bg-panel: #001f00;
+  --crt-bg-hover: #003300;
+
+  /* Text & Glow */
+  --crt-text: var(--crt-green);
+  --crt-glow: 0 0 8px rgba(0, 255, 65, 0.7);
+  --crt-glow-strong: 0 0 15px rgba(0, 255, 65, 1);
+  --crt-glow-red: 0 0 10px rgba(255, 0, 0, 0.8);
+  --crt-glow-amber: 0 0 10px rgba(255, 170, 0, 0.8);
+
+  /* Borders & Hardware */
+  --hardware-border: inset 2px 2px 0px rgba(255, 255, 255, 0.2), inset -2px -2px 0px rgba(0, 0, 0, 0.8), 0 0 0 1px #003300;
+  --hardware-panel: #111a11;
+  --bezel-color: #050a05;
+
+  /* Layout Sizing */
+  --sidebar-width: 80px;
+  --header-height: 50px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  cursor: crosshair !important;
+  /* Retro hardware feel */
+}
+
+body {
+  margin: 0;
+  background-color: var(--crt-bg);
+  color: var(--crt-text);
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  line-height: 1.2;
+  overflow-x: hidden;
+  text-shadow: var(--crt-glow);
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================
+   CRT OVERLAY EFFECTS
+========================================= */
+
+.crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+
+  /* Scanlines */
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg,
+      rgba(255, 0, 0, 0.06),
+      rgba(0, 255, 0, 0.02),
+      rgba(0, 0, 255, 0.06));
+  background-size: 100% 4px, 3px 100%;
+
+  /* Vignette & Curvature Bezel */
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9), inset 0 0 10px #000;
+  border: 15px solid var(--bezel-color);
+  border-radius: 20px;
+
+  /* Flicker */
+  animation: flicker 0.15s infinite alternate;
+}
+
+@keyframes flicker {
+  0% {
+    opacity: 0.95;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Optional CRT Turn on effect */
+@keyframes crtTurnOn {
+  0% {
+    transform: scale(1, 0.001);
+    filter: brightness(10);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1, 0.001);
+    filter: brightness(10);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1, 1);
+    filter: brightness(1);
+    opacity: 1;
+  }
+}
+
+.crt-boot {
+  animation: crtTurnOn 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+
+/* =========================================
+   TYPOGRAPHY & UTILITIES
+========================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'VT323', monospace;
+  font-weight: normal;
+  text-transform: uppercase;
+  margin-bottom: 0.5em;
+  letter-spacing: 2px;
+}
+
+.text-green {
+  color: var(--crt-green);
+  text-shadow: var(--crt-glow);
+}
+
+.text-red {
+  color: var(--crt-red);
+  text-shadow: var(--crt-glow-red);
+}
+
+.text-amber {
+  color: var(--crt-amber);
+  text-shadow: var(--crt-glow-amber);
+}
+
+.bg-panel {
+  background-color: var(--crt-bg-panel);
+  border: 2px solid var(--crt-green);
+  box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.1), 0 0 5px rgba(0, 255, 65, 0.2);
+}
+
+.hardware-panel {
+  background-color: var(--hardware-panel);
+  border: 2px solid #000;
+  box-shadow: var(--hardware-border);
+  position: relative;
+  padding: 16px;
+}
+
+/* Screws in the corners of hardware panels */
+.hardware-panel::before,
+.hardware-panel::after {
+  content: '+';
+  position: absolute;
+  color: #333;
+  font-size: 14px;
+  font-family: monospace;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.hardware-panel::before {
+  top: 4px;
+  left: 4px;
+}
+
+.hardware-panel::after {
+  bottom: 4px;
+  right: 4px;
+}
+
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+button,
+.btn {
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  background-color: #222;
+  color: var(--crt-green);
+  border: 2px solid #000;
+  box-shadow: inset 2px 2px 0px rgba(255, 255, 255, 0.1), inset -2px -2px 0px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.8);
+  padding: 6px 16px;
+  cursor: crosshair;
+  transition: all 0.1s;
+  text-shadow: var(--crt-glow);
+}
+
+button:hover,
+.btn:hover {
+  background-color: #333;
+  color: #fff;
+  text-shadow: 0 0 10px #fff;
+}
+
+button:active,
+.btn:active {
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.5), inset -2px -2px 0px rgba(255, 255, 255, 0.1);
+  transform: translateY(2px);
+}
+
+.btn-danger {
+  color: var(--crt-red);
+  text-shadow: var(--crt-glow-red);
+}
+
+.btn-danger:hover {
+  background-color: #400;
+  color: #fff;
+  text-shadow: 0 0 10px #fff;
+}
+
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+::-webkit-scrollbar {
+  width: 14px;
+  background: var(--bezel-color);
+  border-left: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border: 2px solid #000;
+  box-shadow: inset 2px 2px 0px rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================
+   ANIMATIONS & BLINKING
+========================================= */
+
+.blink {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.teletype-row {
+  white-space: pre;
+  font-family: 'Courier Prime', monospace;
+}
+
+/* Global inputs */
+input,
+select,
+textarea {
+  background: var(--crt-bg) !important;
+  color: var(--crt-green) !important;
+  border: 1px solid var(--crt-green) !important;
+  font-family: 'VT323', monospace !important;
+  font-size: 1.2rem !important;
+  padding: 4px !important;
+  text-shadow: var(--crt-glow) !important;
+  outline: none !important;
+}
+
+input:focus {
+  background: var(--crt-bg-hover) !important;
+  box-shadow: 0 0 8px var(--crt-green) !important;
+}

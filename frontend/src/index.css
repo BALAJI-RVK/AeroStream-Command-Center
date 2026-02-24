@@ -1,0 +1,11 @@
+@import './App.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased text-green-400 bg-black;
+  }
+}
