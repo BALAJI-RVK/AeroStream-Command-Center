@@ -58,3 +58,192 @@
 .crt-weather {
     filter: hue-rotate(90deg) brightness(1.3) contrast(1.6) !important;
 }
+
+/* ================= LOGIN SPECIFIC ================= */
+
+.login-root {
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--crt-bg, #050505);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--crt-green);
+    font-family: 'VT323', 'Courier Prime', monospace;
+    overflow: hidden;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.login-shake {
+    animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+@keyframes shake {
+
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(4px, 0, 0);
+    }
+}
+
+.boot-text {
+    font-size: 24px;
+    line-height: 1.5;
+    text-shadow: 0 0 5px var(--crt-green);
+    margin-bottom: 2rem;
+}
+
+.cursor-blink {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+.retro-panel {
+    border: 3px ridge var(--crt-green);
+    background: rgba(0, 50, 0, 0.1);
+    box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1), 0 0 10px rgba(0, 255, 0, 0.2);
+    padding: 2rem;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        filter: blur(4px);
+    }
+
+    to {
+        opacity: 1;
+        filter: blur(0);
+    }
+}
+
+.login-row label {
+    display: inline-block;
+    width: 250px;
+    font-size: 20px;
+}
+
+.retro-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--crt-green);
+    color: var(--crt-green);
+    font-family: inherit;
+    font-size: 20px;
+    width: 200px;
+    outline: none;
+    text-shadow: 0 0 5px var(--crt-green);
+    text-transform: uppercase;
+}
+
+.retro-input:focus {
+    border-bottom: 2px solid #fff;
+    box-shadow: 0 5px 5px -5px var(--crt-green);
+}
+
+.retro-btn {
+    background: #000;
+    border: 3px outset var(--crt-green);
+    color: var(--crt-green);
+    padding: 10px 30px;
+    font-family: inherit;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.1s;
+    text-shadow: 0 0 5px var(--crt-green);
+}
+
+.retro-btn:active {
+    border-style: inset;
+    background: rgba(0, 255, 65, 0.2);
+}
+
+.retro-btn:hover {
+    background: rgba(0, 255, 65, 0.1);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
+}
+
+.scanline-progress {
+    width: 100%;
+    height: 15px;
+    border: 1px solid var(--crt-green);
+    position: relative;
+    overflow: hidden;
+}
+
+.scanline-bar {
+    width: 30%;
+    height: 100%;
+    background: var(--crt-green);
+    box-shadow: 0 0 10px var(--crt-green);
+    position: absolute;
+    animation: sweep 1.2s infinite ease-in-out alternate;
+}
+
+@keyframes sweep {
+    0% {
+        left: 0%;
+    }
+
+    100% {
+        left: 70%;
+    }
+}
+
+.success-flash {
+    font-size: 48px;
+    color: var(--crt-green);
+    text-shadow: 0 0 20px var(--crt-green);
+    text-align: center;
+    animation: flashGreen 0.2s 3;
+}
+
+@keyframes flashGreen {
+
+    0%,
+    100% {
+        background: transparent;
+        color: var(--crt-green);
+    }
+
+    50% {
+        background: var(--crt-green);
+        color: #000;
+    }
+}
+
+.blink-fast {
+    animation: blink 0.2s step-end infinite;
+}

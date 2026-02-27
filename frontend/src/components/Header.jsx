@@ -19,7 +19,7 @@ export default function Header() {
     }, []);
 
     const routes = [
-        { path: '/', label: 'F1: DASH' },
+        { path: '/dashboard', label: 'F1: DASH' },
         { path: '/map', label: 'F2: MAP' },
         { path: '/risk', label: 'F3: RISK' },
         { path: '/strategy', label: 'F4: OPS' },
@@ -32,7 +32,7 @@ export default function Header() {
     // Global keyboard navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.key === 'F1') { e.preventDefault(); navigate('/'); }
+            if (e.key === 'F1') { e.preventDefault(); navigate('/dashboard'); }
             if (e.key === 'F2') { e.preventDefault(); navigate('/map'); }
             if (e.key === 'F3') { e.preventDefault(); navigate('/risk'); }
             if (e.key === 'F4') { e.preventDefault(); navigate('/strategy'); }

@@ -8,9 +8,15 @@ from models.schemas import PredictRequest, MitigateRequest
 router = APIRouter()
 
 @router.post("/predict")
-def predict_flight_delay(req: PredictRequest):
-    """Run XGBoost delay prediction for a flight."""
-    prediction = predict_delay(req.model_dump())
+async def predict_flight_delay(req: PredictRequest):
+    """Run XGBoost delay prediction for a flight, enriched with live weather and telemetry."""
+    flight_data = req.model_dump()
+    
+    # Proactively fetch live weather
+    weather = await fetch_weather(req.origin)
+    flight_data["live_weather"] = weather
+    
+    prediction = predict_delay(flight_data)
     
     log_prediction(
         flight_id=req.flight_id or f"{req.origin}-{req.destination}",

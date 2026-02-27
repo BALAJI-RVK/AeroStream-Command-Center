@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import AlertManager from './components/AlertManager';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import LiveMap from './pages/LiveMap';
 import RiskIntel from './pages/RiskIntel';
@@ -16,8 +17,9 @@ function App() {
     <AlertManager>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Login />} />
           <Route element={<Layout />}>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/map" element={<LiveMap />} />
             <Route path="/risk" element={<RiskIntel />} />
             <Route path="/strategy" element={<OpsStrategy />} />

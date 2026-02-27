@@ -203,15 +203,49 @@ def predict_delay(flight_data: dict) -> dict:
             else:
                 features.append(0)
         
+        weather = flight_data.get("live_weather", {})
+        weather_delay = float(flight_data.get('weather_delay', 0))
+        nas_delay = float(flight_data.get('nas_delay', 0))
+        late_aircraft_delay = float(flight_data.get('late_aircraft_delay', 0))
+
+        if weather:
+            cond = weather.get("condition", "").lower()
+            vis = weather.get("visibility_km", 10)
+            wind = weather.get("wind_speed_kmh", 0)
+            
+            if "storm" in cond or "thunder" in cond:
+                weather_delay = max(weather_delay, 45.0)
+            elif "rain" in cond or "snow" in cond or "fog" in cond or vis < 2.0:
+                weather_delay = max(weather_delay, 25.0)
+            elif wind > 40:
+                weather_delay = max(weather_delay, 15.0)
+
+        # Indian Hub Regional Variability
+        origin = flight_data.get("origin", "")
+        dest = flight_data.get("destination", "")
+        import datetime
+        hour = flight_data.get("hour_of_day", datetime.datetime.now().hour)
+        if origin in ["DEL", "BOM", "BLR", "HYD", "MAA"] or dest in ["DEL", "BOM", "BLR", "HYD", "MAA"]:
+            if 8 <= hour <= 11 or 17 <= hour <= 21: # Rush hours
+                nas_delay = max(nas_delay, 30.0)
+            else:
+                nas_delay = max(nas_delay, 10.0)
+
+        # Velocity Mapping (slow cruise implies holding pattern)
+        vel = float(flight_data.get("velocity", 0))
+        alt = float(flight_data.get("altitude", 0))
+        if vel > 0 and vel < 350 and alt > 10000:
+            late_aircraft_delay = max(late_aircraft_delay, 20.0)
+
         features.extend([
             float(flight_data.get('distance', 500)),
             int(flight_data.get('month', 6)),
             int(flight_data.get('day_of_week', 3)),
-            int(flight_data.get('hour_of_day', 12)),
-            float(flight_data.get('weather_delay', 0)),
+            int(hour),
+            weather_delay,
             float(flight_data.get('carrier_delay', 0)),
-            float(flight_data.get('nas_delay', 0)),
-            float(flight_data.get('late_aircraft_delay', 0)),
+            nas_delay,
+            late_aircraft_delay,
             float(flight_data.get('security_delay', 0)),
         ])
         
@@ -220,12 +254,14 @@ def predict_delay(flight_data: dict) -> dict:
         
         # Feature importance
         importances = _model.feature_importances_
-        feature_names = _model_metadata.get('feature_names', [
-            'airline', 'airline_code', 'origin', 'destination',
-            'distance', 'month', 'day_of_week', 'hour_of_day',
-            'weather_delay', 'carrier_delay', 'nas_delay',
-            'late_aircraft_delay', 'security_delay'
-        ])
+        feature_names = _model_metadata.get('feature_names')
+        if not feature_names:
+            feature_names = [
+                'airline', 'airline_code', 'origin', 'destination',
+                'distance', 'month', 'day_of_week', 'hour_of_day',
+                'weather_delay', 'carrier_delay', 'nas_delay',
+                'late_aircraft_delay', 'security_delay'
+            ]
         
         importance_dict = {}
         for name, imp in zip(feature_names, importances):

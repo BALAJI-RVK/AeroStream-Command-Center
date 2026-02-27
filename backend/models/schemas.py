@@ -16,6 +16,8 @@ class PredictRequest(BaseModel):
     nas_delay: Optional[float] = 0
     late_aircraft_delay: Optional[float] = 0
     security_delay: Optional[float] = 0
+    velocity: Optional[float] = 0
+    altitude: Optional[float] = 0
 
 class MitigateRequest(BaseModel):
     flight_id: str

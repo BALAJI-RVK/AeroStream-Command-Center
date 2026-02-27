@@ -1789,15 +1789,19 @@ def _get_valid_token():
     except Exception as e:
         print(f"⚠️ Failed to read token from DuckDB: {e}")
 
-    print("🔄 Requesting new OpenSky OAuth2 token from API...")
-    r = requests.post(
-        TOKEN_URL, 
-        data={'grant_type': 'client_credentials'}, 
-        auth=(OPENSKY_CLIENT_ID, OPENSKY_CLIENT_SECRET), 
-        timeout=10
-    )
-    r.raise_for_status()
-    data = r.json()
+    try:
+        print("🔄 Requesting new OpenSky OAuth2 token from API...")
+        r = requests.post(
+            TOKEN_URL, 
+            data={'grant_type': 'client_credentials'}, 
+            auth=(OPENSKY_CLIENT_ID, OPENSKY_CLIENT_SECRET), 
+            timeout=10
+        )
+        r.raise_for_status()
+        data = r.json()
+    except Exception as e:
+        print(f"⚠️ Failed to get OpenSky token: {e}. Falling back to anonymous request if permitted.")
+        return None
     _access_token = data.get('access_token')
     expires_in = data.get('expires_in', 1800)
     _token_expiry = time.time() + expires_in - 60  # refresh 1 minute early
@@ -1824,9 +1828,10 @@ def get_opensky_flights():
         token = _get_valid_token()
         
         headers = {
-            "Authorization": f"Bearer {token}",
             "User-Agent": "AeroStream-Legacy-Console/0.9.4"
         }
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
         
         r = requests.get(url, headers=headers, timeout=10)
         r.raise_for_status()                    # raises on 4xx/5xx
@@ -1869,9 +1874,10 @@ def get_airport_flights(airport_code: str):
     try:
         token = _get_valid_token()
         headers = {
-            "Authorization": f"Bearer {token}",
             "User-Agent": "AeroStream-Legacy-Console/0.9.4"
         }
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
         
         end_time = int(time.time())
         begin_time = end_time - (2 * 3600)  # last 2 hours
@@ -1934,9 +1940,10 @@ def get_aircraft_flights(icao24: str):
     try:
         token = _get_valid_token()
         headers = {
-            "Authorization": f"Bearer {token}",
             "User-Agent": "AeroStream-Legacy-Console/0.9.4"
         }
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
         
         # OpenSky allows a maximum of 30 days for this endpoint
         end_time = int(time.time())
@@ -1978,9 +1985,10 @@ def get_flight_track(icao24: str):
     try:
         token = _get_valid_token()
         headers = {
-            "Authorization": f"Bearer {token}",
             "User-Agent": "AeroStream-Legacy-Console/0.9.4"
         }
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
         
         # time=0 gets the track of the currently active flight
         url = f"https://opensky-network.org/api/tracks/all?icao24={icao24}&time=0"
