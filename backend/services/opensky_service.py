@@ -1762,7 +1762,7 @@ GLOBAL_FLIGHTS = [
 ]
 
 OPENSKY_CLIENT_ID = "r.v.k.balaji1203@gmail.com-api-client"
-OPENSKY_CLIENT_SECRET = "8bDaLifJLaozdVxyrUVTndELixpwx2lp"
+OPENSKY_CLIENT_SECRET = ""
 TOKEN_URL = "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"
 
 _access_token = None
